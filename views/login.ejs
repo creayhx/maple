@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+	<%include ./includes/head%>
+	<body>
+		<div class="mask"></div>
+		<div class="nav nav-trans">
+			<div class="nav-title">
+				<a href="/">MapleStory</a>
+			</div>
+		</div>
+		<div class="sculpture">
+			<div class="sculpbox">
+				<img src="/images/sculptrue/36.jpg" width="100" alt="" />
+			</div>
+			<div class="userlogin">
+				<input type="text" name="userName" onfocus="if(this.placeholder){this.placeholder=''}" onblur="if(this.placeholder==''){this.placeholder='请输入用户名'}" placeholder="请输入用户名" class="name" />
+				<input type="password" name="userPassword" onfocus="if(this.placeholder){this.placeholder=''}" onblur="if(this.placeholder==''){this.placeholder='请输入密码'}" placeholder="请输入密码" class="pwd" />
+				<input type="button" value="登录" class="login" />
+			</div>
+			<h3 class="gotoreg">还没有帐号?点击
+				<a href="/reg">注册</a>
+			</h3>
+		</div>
+	</body>
+	<script>
+		$(function(){
+			var Dom = {
+				login:$('.login'),
+				userName :$('input[name=userName]'),
+				userPassword :$('input[name=userPassword]')
+			}
+			function testAll(){
+				if(Dom.userName.val() != '' && Dom.userPassword.val() != ''){
+					return true
+				}else{
+					return false
+				}
+			}
+			Dom.login.click(function(){
+				//登录按钮
+				var user = {
+					name:Dom.userName.val(),
+					password:Dom.userPassword.val(),
+				}
+				if(testAll()){
+					$.ajax({
+						type:'post',
+						url:'/signin',
+						data:user,
+						dataType:'json',
+						success:function(resp){
+							if(resp.result){
+								window.location.href = '/';
+							}else{
+								alert(resp.msg);
+							}
+						}
+					})
+				}else{
+					alert('请输入用户名和密码');
+				}
+			})
+		})
+	</script>
+</html>

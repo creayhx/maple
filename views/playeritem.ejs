@@ -1,0 +1,133 @@
+<!doctype html>
+<html>
+    <%include ./includes/head%>
+    <body>
+        <div class="nav nav-over">
+            <div class="nav-title">
+                <a href="/">MapleStory</a>
+            </div>
+            <div class="navbar">
+                <% if(!user){ %>
+                    <a href="/login">登录</a>
+                    <a>|</a>
+                    <a href="/reg">注册</a>
+                <%}else{%>
+                    <span class="user"><%=user.name%></span>
+                    <span class="logout">注销</span>
+                <%}%>
+            </div>
+        </div>
+
+        <div class="userdetail"></div>
+        <div class="user-mask">
+            <div class="index-library mb0">
+                <div class="index-item-title index-player cc-player">
+                    <p class="findPlayer">点击此处查询角色<span class="down"></span></p>
+                </div>
+                <div class="index-player-content plist">
+                    <ul>
+                        <%if(players){
+                            players.forEach(function(item,index){%>
+                                <li><%=item.name%></li>
+                        <%})}else{%>
+                            <li>您还没有人物</li>
+                        <%}%>
+                    </ul>
+                </div>
+            </div>
+            <div class="item-content-nav">
+                <ul>
+                    <li class="on">装备</li>
+                    <li>消耗</li>
+                    <li>设置</li>
+                    <li >其他</li>
+                    <li>特殊</li>
+                </ul>
+            </div>
+            <div class="item-content-pic">
+                <div class="item-content-list">
+                    <ul id="equa" ></ul>
+                    <ul id="use" ></ul>
+                    <ul id="opt" ></ul>
+                    <ul id="items" ></ul>
+                    <ul id="spec"></ul>
+                </div>
+            </div>
+        </div>
+    </body>
+    <script>
+        $(function(){
+            var equa=null,use= null,opt= null,items=null,spec= null;
+
+            var Dom = {
+                itemContent : $('.item-content-list'),
+                itemNav : $('.item-content-nav'),
+                findPlayer :$('.findPlayer'),
+                plist : $('.plist'),
+                equa:$('#equa'),
+                use:$('#use'),
+                opt:$('#opt'),
+                items:$('#items'),
+                spec:$('#spec')
+            }
+            function showItem(){
+                Dom.equa.empty().append(equa);
+                Dom.use.empty().append(use);
+                Dom.opt.empty().append(opt);
+                Dom.items.empty().append(items);
+                Dom.spec.empty().append(spec);
+                Dom.itemContent.find('ul').hide();
+                Dom.itemNav.find('li').removeClass('on');
+                Dom.itemNav.find('li').eq(0).addClass('on');
+                Dom.equa.show();
+            }
+            function searchItem(name){
+                equa='';use= '';opt= '';items='';spec= '';
+                $.ajax({
+                    url: '/Item',
+                    type: 'post',
+                    data: {name:name},
+                    success:function(resp){
+                        if(resp.result){
+                            resp.data.forEach(function(n,index){
+                                n.itemid = '0' + n.itemid;
+                                switch(n.inventorytype){
+                                    case 1 : equa+= '<li data-id="'+n.itemid+'" style="background-image:url(data:image/png;base64,'+n.item_base+')"></li>\r\n'; break;
+                                    case 2 : use+= '<li data-id="'+n.itemid+'" style="background-image:url(data:image/png;base64,'+n.item_base+')"><span>'+n.quantity+'</span></li>\r\n'; break;
+                                    case 3 : opt+= '<li data-id="'+n.itemid+'" style="background-image:url(data:image/png;base64,'+n.item_base+')"><span>'+n.quantity+'</span></li>\r\n'; break;
+                                    case 4 : items+= '<li data-id="'+n.itemid+'" style="background-image:url(data:image/png;base64,'+n.item_base+')"><span>'+n.quantity+'</span></li>\r\n';break;
+                                    case 5 : spec+= '<li data-id="'+n.itemid+'" style="background-image:url(data:image/png;base64,'+n.item_base+')"><span>'+n.quantity+'</span></li>\r\n';
+                                };
+                            });
+                            showItem();
+                        }else{
+                            alert(resp.msg);
+                        }
+                    }
+                })
+            };
+
+            Dom.findPlayer.click(function(){
+                Dom.plist.show();
+                return false
+            })
+
+            Dom.plist.delegate('li','click',function(){
+                searchItem($(this).text());
+                Dom.plist.hide();
+                Dom.itemNav.show();
+            })
+
+            Dom.itemNav.find('li').click(function(){
+                Dom.itemNav.find('li').removeClass('on');
+                Dom.itemContent.find('ul').hide();
+                var index = $(this).index();
+                Dom.itemContent.find('ul').eq(index).show();
+                $(this).addClass('on');
+            })
+            Dom.itemContent.delegate('li','click',function(){
+                alert($(this).attr('data-id'));
+            })
+        })
+    </script>
+</html>

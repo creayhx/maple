@@ -1,0 +1,138 @@
+
+<!doctype html>
+<html>
+	<%include ./includes/head %>
+	<body class="index">
+		<div class="index-bg">
+			<div class="index-mask">
+				<div class="nav">
+					<div class="nav-title">
+						<a href="/">MapleStory</a>
+					</div>
+					<div class="navbar">
+						<% if(!user){ %>
+							<a href="/login">登录</a>
+							<a>|</a>
+							<a href="/reg">注册</a>
+						<%}else{%>
+							<span class="user"><%=user.name%></span>
+							<span class="logout">注销</span>
+						<%}%>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="index-main">
+			<div class="index-library">
+				<div class="index-item">
+					<div class="index-item-title index-search">数据查询</div>
+					<div id="menuList" class="index-item-content">
+						<ul>
+							<li>
+								<div class="item-box item-box1" data-id="1">
+									<p>物品查询</p>
+								</div>
+							</li>
+							<li>
+								<div class="item-box item-box2" data-id="2">
+									<p>怪物详情</p>
+								</div>
+							</li>
+							<% if(user){ %>
+								<li>
+									<div class="item-box item-box6" data-id="6">
+										<p>账户信息</p>
+									</div>
+								</li>
+								<li>
+									<div class="item-box item-box7" data-id="7">
+										<p>人物信息</p>
+									</div>
+								</li>
+						 		<li>
+							 		<div class="item-box item-box9" data-id="8">
+							 			<p>人物
+							 			详情</p>
+							 		</div>
+						 		</li>
+							<%}%>
+						</ul>
+					</div>
+				</div>
+			</div>
+			<div class="index-library">
+				<div class="index-item">
+					<div class="index-item-title index-music">
+					<span>BGM欣赏</span>
+					<span class="item-control item-music-pause"></span>
+					</div>
+					<div class="index-item-content index-musicbox">
+						<%for(var i = 0; i ==0;i++){
+						%>
+							<div class="item-music"></div>
+						<%}%>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="musicplay">
+			<audio autoplay></audio>
+		</div>
+		<script>
+			$(function(){
+				var Dom = {
+					user:$('.user'),
+					logout:$('.logout'),
+					menuList:$('#menuList li'),
+					audio : $('audio'),
+					item_control : $('.item-control'),
+					onMusic : $('.item-music')
+				}
+
+				Dom.logout.click(function(){
+					$.ajax({
+						type:'post',
+						url:'logout',
+						data:{userName:Dom.user.text()},
+						dataType:'json',
+						success:function(resp){
+							if(resp.result){
+								window.location.reload();
+							}else{
+								alert(resp.msg)
+							}
+						}
+					})
+				})
+				Dom.menuList.click(function(){
+					var id = $(this).find(':first-child').attr('data-id');
+					switch(id){
+						case '1': window.location.href="/search/"; break;
+						case '2': window.location.href="/mob"; break;
+						case '6': window.location.href="/user"; break;
+						case '7': window.location.href="/players"; break;
+						case '8': window.location.href="/item"; break;
+					}
+				})
+
+				Dom.onMusic.click(function(){ //歌曲切换
+					Dom.onMusic.removeClass('item-music-on');
+					Dom.audio.attr('src','../Sounds/'+$(this).text()+'.mp3')
+					Dom.audio[0].play();
+					Dom.onMusic = $(this);
+					$(this).addClass('item-music-on');
+					Dom.item_control.removeClass('item-music-play').addClass('item-music-pause').show();
+				});
+				Dom.item_control.click(function(){//歌曲control
+					if( $(this).hasClass('item-music-pause') ){
+						$(this).removeClass('item-music-pause').addClass('item-music-play');
+						Dom.audio[0].pause();
+					}else{
+						$(this).removeClass('item-music-play').addClass('item-music-pause');
+						Dom.audio[0].play();
+					}
+				});
+			})
+		</script>
+	</body>
+</html>

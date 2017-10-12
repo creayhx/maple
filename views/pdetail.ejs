@@ -1,0 +1,145 @@
+<!doctype html>
+<html>
+	<%include ./includes/head%>
+	<body>
+		<div class="nav nav-over">
+		    <div class="nav-title">
+		        <a href="/">MapleStory</a>
+		    </div>
+		    <div class="navbar">
+		        <% if(!user){ %>
+		            <a href="/login">登录</a>
+		            <a>|</a>
+		            <a href="/reg">注册</a>
+		        <%}else{%>
+		            <span class="user"><%=user.name%></span>
+		            <span class="logout">注销</span>
+		        <%}%>
+		    </div>
+		</div>
+		<div class="userdetail"></div>
+		<div class="player-mask-over">
+			<div class="player-mask">
+				<div class="index-library pt4">
+					<%if(players){%>
+						<% players.forEach(function(item,index){%>
+							<div class="index-item">
+								<div class="index-item-title index-player"><%=item.name%></div>
+								<div class="index-player-content">
+									<input class="charid" type="hidden" value=<%=item.id%>>
+
+									<ul>
+										<li>
+											<span>等级</span>
+											<span><%=item.level%></span>
+										</li>
+										<li>
+											<span>职业</span>
+											<span>
+												<%switch(item.job){case 0: %>新手<% break;%>
+												<% case 100: %>战士<%break;%>
+												<% case 110: %>剑客<%break;%>
+												<% case 111: %>勇士<%break;%>
+												<% case 112: %>英雄<%break;%>
+												<% case 120: %>准骑士<%break;%>
+												<% case 121: %>骑士<%break;%>
+												<% case 122: %>圣骑士<%break;%>
+												<% case 130: %>枪战士<%break;%>
+												<% case 131: %>龙骑士<%break;%>
+												<% case 132: %>黑骑士<%break;%>
+												<% case 200: %>魔法师<%break;%>
+												<% case 210: %>火毒法师<%break;%>
+												<% case 211: %>火毒巫师<%break;%>
+												<% case 212: %>火毒魔导师<%break;%>
+												<% case 220: %>冰雷法师<%break;%>
+												<% case 221: %>冰雷巫师<%break;%>
+												<% case 222: %>冰雷魔导师<%break;%>
+												<% case 230: %>牧师<%break;%>
+												<% case 231: %>祭祀<%break;%>
+												<% case 232: %>主教<%break;%>
+												<% case 300: %>弓箭手<%break;%>
+												<% case 310: %>猎人<%break;%>
+												<% case 311: %>射手<%break;%>
+												<% case 312: %>神箭手<%break;%>
+												<% case 320: %>弩手<%break;%>
+												<% case 321: %>游侠<%break;%>
+												<% case 322: %>箭神<%break;%>
+												<% case 400: %>飞侠<%break;%>
+												<% case 410: %>刺客<%break;%>
+												<% case 411: %>无影人<%break;%>
+												<% case 412: %>隐士<%break;%>
+												<% case 420: %>侠客<%break;%>
+												<% case 421: %>独行客<%break;%>
+												<% case 422: %>侠盗<%break;%>
+												<% case 500: %>海盗<%break;%>
+												<% case 510: %>拳手<%break;%>
+												<% case 511: %>斗士<%break;%>
+												<% case 512: %>冲锋队长<%break;%>
+												<% case 520: %>火枪手<%break;%>
+												<% case 521: %>大副<%break;%>
+												<% case 522: %>船长<%break;%>
+												<% case 900: %>管理员<%break;%>
+												<% case 910: %>超级管理员<%break;%>
+												<% default :%>未知<%break;%>
+												<%}%>
+											</span>
+										</li>
+
+										<li>
+											<span>属性点</span>
+											<span><%=item.ap%></span>
+										</li>
+										<li>
+											<span>技能点</span>
+											<span><%=item.sp%></span>
+										</li>
+										<li>
+											<span>力量</span>
+											<span><%=item.str%></span>
+										</li>
+										<li>
+											<span>敏捷</span>
+											<span><%=item.dex%></span>
+										</li>
+										<li>
+											<span>智力</span>
+											<span><%=item.int%></span>
+										</li>
+										<li>
+											<span>运气</span>
+											<span><%=item.luk%></span>
+										</li>
+										<li>
+											<span>血量</span>
+											<span><%=item.hp%> / <%=item.maxhp%></span>
+										</li>
+										<li>
+											<span>蓝量</span>
+											<span><%=item.mp%> / <%=item.maxmp%></span>
+										</li>
+										<li>
+											<span>金钱</span>
+											<span><%=item.meso%></span>
+										</li>
+										<li>
+											<span>经验</span>
+											<span><%=item.exp%></span>
+										</li>
+										<li>
+											<span>人气值</span>
+											<span><%=item.karma%></span>
+										</li>
+										<li>
+											<span>VIP</span>
+											<span><%=item.vip%></span>
+										</li>
+									</ul>
+								</div>
+							</div>
+						<%})%>
+					<%}%>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

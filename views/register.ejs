@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+	<%include ./includes/head%>
+	<body>
+		<div class="mask"></div>
+		<div class="nav nav-trans">
+			<div class="nav-title">
+				<a href="/">MapleStory</a>
+			</div>
+		</div>
+		<div class="sculpture">
+			<div class="sculpbox">
+				<img src="/images/sculptrue/36.jpg" width="100" />
+			</div>
+			<div class="userlogin">
+				<form action="/signup" method="post">
+					<input type="text" name="userName" onfocus="if(this.placeholder){this.placeholder=''}" onblur="if(this.placeholder==''){this.placeholder='请输入用户名'}" placeholder="请输入用户名" class="name" />
+					<input type="password" name="userPassword" onfocus="if(this.placeholder){this.placeholder=''}" onblur="if(this.placeholder==''){this.placeholder='请输入密码'}" placeholder="请输入密码" class="pwd" />
+					<input type="password" name="rePassword" onfocus="if(this.placeholder){this.placeholder=''}" onblur="if(this.placeholder==''){this.placeholder='请再次输入密码'}" placeholder="请再次输入密码" class="rpwd" />
+					<input type="text" name="email" onfocus="if(this.placeholder){this.placeholder=''}" onblur="if(this.placeholder==''){this.placeholder='请输入邮箱'}" placeholder="请输入邮箱" />
+					<input type="button" class="reg" value="注册" />
+				</form>
+			</div>
+			<h3 class="gotoreg">已经有帐号?点击
+				<a href="/login">登录</a>
+			</h3>
+		</div>
+		<script>
+			$(function(){
+				var Dom = {
+					userName :$('input[name=userName]'),
+					userPassword :$('input[name=userPassword]'),
+					rePassword :$('input[name=rePassword]'),
+					email :$('input[name=email]'),
+					reg : $('.reg')
+				}
+				function testAll(){
+					if( Dom.userName.val() != '' && Dom.userPassword.val() != '' && Dom.rePassword.val() != ''&& ( Dom.userPassword.val() == Dom.rePassword.val() ) && Dom.email.val() != '' && /^[A-Za-z0-9\u4e00-\u9fa5]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/.test(Dom.email.val()) ){
+						return true
+					}else{
+						false
+					}
+				}
+				Dom.reg.click(function(){
+					var user = {
+						userName : Dom.userName.val(),
+						userPassword : Dom.userPassword.val(),
+						email : Dom.email.val(),
+					}
+					if(testAll()){
+						$.ajax({
+							type:'post',
+							url:'/signup',
+							data:user,
+							dataType:'json',
+							success:function(resp){
+								if(resp.result){
+									alert('注册成功')
+									// window.location.href = '/login';
+								}else{
+									alert(resp.msg)
+								}
+							}
+						})
+					}else{
+						alert('信息错误,请检查您填写的信息');
+					}
+				})
+			})
+		</script>
+	</body>
+	</html>

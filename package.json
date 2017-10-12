@@ -1,0 +1,39 @@
+{
+  "name": "mn",
+  "version": "0.0.1",
+  "description": "This is a node server",
+  "main": "app.js",
+  "dependencies": {
+    "cookie-session": "^2.0.0-alpha.1",
+    "body-parser": "^1.15.2",
+    "connect-mongo": "^1.3.2",
+    "cookie-parser": "^1.4.3",
+    "express": "^4.14.0",
+    "crypto": "^0.0.3",
+    "ejs": "^2.5.6",
+    "express-session": "^1.14.1",
+    "mongoose": "^4.6.0",
+    "moment": "^2.15.2",
+    "mysql": "^2.11.1",
+    "morgan": "^1.7.0",
+    "serve-static": "^1.11.1",
+    "underscore": "^1.8.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/creayhx/mapleNode.git"
+  },
+  "keywords": [
+    "mapleNode"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/creayhx/mapleNode/issues"
+  },
+  "homepage": "https://github.com/creayhx/mapleNode#readme"
+}

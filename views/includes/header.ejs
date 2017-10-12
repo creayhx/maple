@@ -1,0 +1,16 @@
+
+<div class="nav">
+    <div class="nav-title">
+        <a href="/">MapleStory</a>
+    </div>
+    <div class="navbar">
+        <% if(!user){ %>
+            <a href="/login">登录</a>
+            <a>|</a>
+            <a href="/reg">注册</a>
+        <%}else{%>
+            <span class="user"><%=user.name%></span>
+            <span class="logout">注销</span>
+        <%}%>
+    </div>
+</div>
