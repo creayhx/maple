@@ -1,36 +1,41 @@
-/*用作导入数据用途*/
-
 var fs = require('fs');
 var mysql = require('mysql');
 var cheerio = require('cheerio');
-
-var conn = mysql.createConnection(require('./app/sqlConfig').sqlConfig);
-    conn.connect();
-
+// 连接mysql
+var conn = mysql.createConnection({
+    host:'127.0.0.1',
+    user:'root',
+    password:'root',
+    port:'3306',
+    database:'odinms'
+});
+conn.connect();
 function thunkify(fn){
     return function(){
-        var argv = Array.prototype.slice.call(auguments);
         var ctx = this;
-        return function(done){
-            argv.push(done);
-            try{
-                fn.apply(ctx,argv);
-            }catch(err){
-                console.log(err);
-            };
+        var argv = new Array(arguments.length);
+        for(var i = 0; i < arguments.length; i++){
+            argv[i] = arguments[i];
         };
-    };
+        return function(cb){
+            argv.push(cb);
+            fn.apply(ctx,argv);
+        }
+    }
 };
 function co(generator){
     var gen = generator();
     function next(value){
         var res = value ? gen.next(value) : gen.next();
         if(!res.done){
-            if( typeof res.value === 'function'){
-                res.value(function(err,result){
-                    if(err){console.log(err)}
-                    next(result);
-                })
+            if(typeof res.value == 'function'){
+                res.value(function(err,data){
+                    if(err){
+                        console.log(err);
+                    }else{
+                        next(data);
+                    };
+                });
             }else{
                 next(res.value);
             };
@@ -38,170 +43,194 @@ function co(generator){
     };
     next();
 };
-
 function sql(sql,val){
     return function(cb){
         conn.query(sql,val,cb);
-    }
-}
-
-var readFloder = thunkify(fs.readdir);
+    };
+};
 var readFile = thunkify(fs.readFile);
-//
 
-
-function importItemString(){
-    //导入物品详情
-    co(function*(){
-        var files = yield readFloder('./Data/String/Item/');
-        for(let i of files){
-            var file = yield readFile(`./Data/String/Item/${i}`,'utf-8')
-            var $ = cheerio.load(file);
-            var imgDir = $('imgDir');
-            for(let j = 0; j < imgDir.length; j++){
-                var id = parseInt( $(imgDir[j]).attr('name') );
-                if(!isNaN(id) ){
-                    var name = $(imgDir[j]).find('string[name=name]').attr('value');
-                    var desc = $(imgDir[j]).find('string[name=desc]').attr('value');
-                    name = name ? name : '';
-                    desc = desc ? desc : '';
-                    var text = (name && desc) ? (name + '-' + desc):(name + desc);
-                    var exist = yield sql('select * from item_list where item_id = ?',[id]);
-                    if(exist && exist.length == 0){
-                        var resp = yield sql('INSERT INTO item_list(item_id,item_name) values(?,?)',[id,text])
-                        if(resp){
-                            console.log(`${id} Success`);
-                        }
-                    }else{
-                        console.log(`${id} Exist`)
-                    }
-                }
-            }
-        }
-    })
-}
-
-function importMobDetail(){
-    //导入怪物详情
-    function contains(arr, obj) {
-      var i = arr.length;
-      while (i--) {
-        if (arr[i] === obj) {
-          return true;
-        }
-      }
-      return false;
-    }
-    co(function*(){
-        var files = yield readFloder('./Data/Mob/');
-        var mobArr = ["bodyAttack", "level", "maxHP", "maxMP", "speed", "PADamage", "PDDamage", "MADamage", "MDDamage", "acc", "eva", "exp", "undead", "pushed", "summonType", "mobType","boss"];
-        for(let i = 0; i < files.length; i++){
-            var id = parseInt(files[i].split('.')[0]);
-            var file = yield readFile(`./Data/Mob/${files[i]}`,'utf-8')
-            var $ =cheerio.load(file);
-            var int = $('int');
-            for(let j = 0; j < int.length; j++){
-                var name = $(int[j]).attr('name');
-                var value = $(int[j]).attr('value');
-                if(contains(mobArr,name)){
-                    var resp = yield sql(`UPDATE mob_detail SET ${name}=${value} where mob_id=${id}`);
-                    if(resp){
-                        console.log(`${id} ${name} Success`);
-                    }
-                }
-            }
-        }
-    })
-}
-
-function importItemImgBase(){
-    //导入Item  base64
-    co(function*(){
-        var floder = yield readFloder('./Data/Item/');
-        for(let i = 0; i < floder.length; i++){
-            var files = yield readFloder(`./Data/Item/${floder[i]}`);
-            for(let j = 0; j < files.length; j++){
-                var file = yield readFile(`./Data/Item/${floder[i]}/${files[j]}`,'utf-8');
-                var $ = cheerio.load(file);
-                var imgDir = $('imgdir');
-                for(let m = 0; m < imgDir.length; m++){
-                    var k = imgDir[m];
-                    var name = $(k).attr('name');
-                    if(/^\d{6,}$/.test(name)){
-                        var id = parseInt(name);
-                        var base = $(k).find('canvas[name=icon]').attr('basedata');
-                        if(!base){
-                            var addr = $(k).find('uol').attr('value')
-                            if(addr){
-                                var prevId = addr.match(/\d{6,}/);
-                                base = $('imgDir[name='+prevId+']').find('canvas[name=icon]').attr('basedata');
-                            }
-                        }
-                        var res = yield sql('UPDATE item_list SET item_base = ? WHERE item_id = ?',[base,id]);
-                        if(res){
-                            console.log(`${id} Success`)
+var Import = {
+    importCC : function(file){ //导入现金装备 消耗 设置
+        co(function*(){
+            var data = yield readFile('./string/' + file,'utf-8');
+            var $ = cheerio.load(data);
+            var  imgDir = $('imgdir[name="'+ file.substr(0, file.lastIndexOf('.')) +'"]').find('imgdir');
+            for(var i = 0; i < imgDir.length;i++){
+                var n = $(imgDir[i]);
+                var id = n.attr('name');
+                var name = n.find('string[name="name"]').attr('value');
+                var desc = n.find('string[name="desc"]').attr('value');
+                if(/^\d+$/.test(id)){
+                    var hasCount = yield sql('SELECT * FROM item_list WHERE item_id = ?', [id]);
+                    if(hasCount.length == 0){
+                        var result = yield sql('INSERT INTO item_list(item_id,item_name,item_desc) VALUES(?,?,?)',[Number(id),name,desc && desc.replace(/(\r)*(\n)*(#[a-zA-Z0-9]*)*(#)?/g,'')]);
+                        if(result.fieldCount == 0){
+                            console.log( id + ' insert success');
+                        }else{
+                            console.log(id + ' insert success');
                         };
-
                     };
                 };
             };
-        };
-    });
-}
-function importMobImgBase(){
-    co(function*(){
-        var files = yield readFloder('./Data/Mob/');
-        for(let i = 0; i < files.length; i++){
-            var file = yield readFile(`./Data/Mob/${files[i]}`,'utf-8')
-            var id = parseInt(files[i].split('.')[0]);
-            var $ = cheerio.load(file);
-            var imgDir = $('imgDir');
-            for(let j = 0; j < imgDir.length; j++){
-                let k = imgDir[j];
-                let name = $(k).attr('name');
-                if(name.indexOf('stand') != -1 || name.indexOf('fly') != -1){
-                    base = $(k).find('canvas').attr('basedata');
-                    var res = yield sql('UPDATE mob_list SET mob_base = ? WHERE mob_id = ?',[base,id])
-                    console.log(`${id} Success`)
-                }
-            }
-        }
-    });
-};
-function importCharacterBase(){
-    co(function*(){
-        var floder = yield readFloder('./Data/Character/');
-        for(let i = 0; i < floder.length; i++){
-            var files = yield readFloder(`./Data/Character/${floder[i]}`);
-            for(let j = 0; j < files.length; j++){
-                var file = yield readFile(`./Data/Character/${floder[i]}/${files[j]}`,'utf-8');
-                var id = parseInt(files[j].split('.')[0]);
-                var $ = cheerio.load(file);
-                var base = $('imgDir canvas[name=icon]').attr('basedata');
-                var res = yield sql('UPDATE item_list SET item_base = ? WHERE item_id = ?',[base,id]);
-                if(res){console.log(`${id} Success`)};
-            };
-        };
-    });
-};
-
-function importMonsterMap(){
-    co(function*(){
-        var file = yield readFile('./Data/String/MonsterBook/MonsterBook.img.xml');
-        var $ = cheerio.load(file);
-        var imgDir = $('imgDir');
-        for(let i = 0; i < imgDir.length; i++){
-            var k = imgDir[i];
-            var name = $(k).attr('name');
-            if(/\d{6,}/.test(name)){
-                var maps = $(k).find('imgDir[name=map] int');
-                for(let j = 0; j < maps.length; j++){
-                    var value = $(maps[j]).attr('value');
-                    var res = yield sql('INSERT INTO mob_map(mob_id,map_id) VALUES (?,?)',[name,value]);
-                    if(res){console.log(`${name} Success`)}
+        });
+    },
+    importEE : function(file){ // 导入装备 其他
+        co(function*(){
+            var data = yield readFile('./string/' + file,'utf-8');
+            var $ = cheerio.load(data);
+            var  imgDir = $('imgdir[name="'+ file.substr(0, file.lastIndexOf('.')) +'"] imgdir imgdir');
+            for(var i = 0; i < imgDir.length;i++){
+                var n = $(imgDir[i]);
+                var id = n.attr('name');
+                var name = n.find('string[name="name"]').attr('value');
+                var desc = n.find('string[name="desc"]').attr('value');
+                if(/^\d+$/.test(id)){
+                    var hasCount = yield sql('SELECT * FROM item_list WHERE item_id = ?', [id]);
+                    if(hasCount.length == 0){
+                        var result = yield sql('INSERT INTO item_list(item_id,item_name,item_desc) VALUES(?,?,?)',[Number(id),name,desc && desc.replace(/(\r)*(\n)*(#[a-zA-Z0-9]*)*(#)?/g,'')]);
+                        if(result.fieldCount == 0){
+                            console.log( id + ' insert success');
+                        }else{
+                            console.log(id + ' insert success');
+                        };
+                    };
                 };
             };
+        });
+    },
+    importMap : function(file){ // 导入装备 其他
+        co(function*(){
+            var data = yield readFile('./string/' + file,'utf-8');
+            var $ = cheerio.load(data);
+            var  imgDir = $('imgdir[name="'+ file.substr(0, file.lastIndexOf('.')) +'"] imgdir imgdir');
+            for(var i = 0; i < imgDir.length;i++){
+                var n = $(imgDir[i]);
+                var id = n.attr('name');
+                var streetName = n.find('string[name="streetName"]').attr('value');
+                var mapName = n.find('string[name="mapName"]').attr('value');
+                var name = (streetName ? streetName + '-' : '') + (mapName ? mapName : '');
+                if(/^\d+$/.test(id)){
+                    var hasCount = yield sql('SELECT * FROM map_list WHERE map_id = ?', [id]);
+                    if(hasCount.length == 0){
+                        var result = yield sql('INSERT INTO map_list(map_id,map_name) VALUES(?,?)',[Number(id),name]);
+                        if(result.fieldCount == 0){
+                            console.log( id + ' insert success');
+                        }else{
+                            console.log(id + ' insert success');
+                        };
+                    };
+                };
+            };
+        });
+    },
+    importMob : function(file){ // 导入装备 其他
+        co(function*(){
+            var data = yield readFile('./string/' + file,'utf-8');
+            var $ = cheerio.load(data);
+            var  imgDir = $('imgdir[name="'+ file.substr(0, file.lastIndexOf('.')) +'"]').find('imgdir');
+            for(var i = 0; i < imgDir.length;i++){
+                var n = $(imgDir[i]);
+                var id = n.attr('name');
+                var name = n.find('string[name="name"]').attr('value');
+                if(/^\d+$/.test(id)){
+                    var hasCount = yield sql('SELECT * FROM mob_list WHERE mob_id = ?', [id]);
+                    if(hasCount.length == 0){
+                        var result = yield sql('INSERT INTO mob_list(mob_id,mob_name) VALUES(?,?)',[Number(id),name]);
+                        if(result.fieldCount == 0){
+                            console.log( id + ' insert success');
+                        }else{
+                            console.log(id + ' insert success');
+                        };
+                    };
+                };
+            };
+        });
+    },
+    importNpc : function(file){ // 导入装备 其他
+        co(function*(){
+            var data = yield readFile('./string/' + file,'utf-8');
+            var $ = cheerio.load(data);
+            var  imgDir = $('imgdir[name="'+ file.substr(0, file.lastIndexOf('.')) +'"]').find('imgdir');
+            for(var i = 0; i < imgDir.length;i++){
+                var n = $(imgDir[i]);
+                var id = n.attr('name');
+                var name = n.find('string[name="name"]').attr('value');
+                if(/^\d+$/.test(id)){
+                    var hasCount = yield sql('SELECT * FROM npc_list WHERE npc_id = ?', [id]);
+                    if(hasCount.length == 0){
+                        var result = yield sql('INSERT INTO npc_list(npc_id,npc_name) VALUES(?,?)',[Number(id),name]);
+                        if(result.fieldCount == 0){
+                            console.log( id + ' insert success');
+                        }else{
+                            console.log(id + ' insert success');
+                        };
+                    };
+                };
+            };
+        });
+    },
+    importSkill : function(file){ // 导入装备 其他
+        co(function*(){
+            var data = yield readFile('./string/' + file,'utf-8');
+            var $ = cheerio.load(data);
+            var  imgDir = $('imgdir[name="'+ file.substr(0, file.lastIndexOf('.')) +'"]>imgdir');
+            for(var i = 0; i < imgDir.length;i++){
+                var n = $(imgDir[i]);
+                var id = n.attr('name');
+                var name = n.find('string[name="name"]').attr('value');
+                var desc = n.find('string[name="desc"]').attr('value');
+                if(/^\d+$/.test(id)){
+                    var hasCount = yield sql('SELECT * FROM skill_list WHERE skill_id = ?', [id]);
+                    if(hasCount.length == 0){
+                        var result = yield sql('INSERT INTO skill_list(skill_id,skill_name,skill_desc) VALUES(?,?,?)',[Number(id),name,desc && desc.replace(/(\r)*(\n)*(#[a-zA-Z0-9]*)*(#)?/g,'')]);
+                        if(result.fieldCount == 0){
+                            console.log( id + ' insert success');
+                        }else{
+                            console.log(id + ' insert success');
+                        };
+                    };
+                };
+            };
+        });
+    },
+    importMonsterBook : function(file){ // 导入装备 其他
+        co(function*(){
+            var data = yield readFile('./string/' + file,'utf-8');
+            var $ = cheerio.load(data);
+            var  imgDir = $('imgdir[name="'+ file.substr(0, file.lastIndexOf('.')) +'"]>imgdir');
+            for(var i = 0; i < imgDir.length;i++){
+                var n = $(imgDir[i]);
+                var id = n.attr('name');
+                var child = n.find('imgdir');
+                for(var j = 0; j < child.length; j++){
+                    console.log($(child[j]).attr('name'));
+                };
+                // if(/^\d+$/.test(id)){
+                //     var hasCount = yield sql('SELECT * FROM skill_list WHERE skill_id = ?', [id]);
+                //     if(hasCount.length == 0){
+                //         var result = yield sql('INSERT INTO skill_list(skill_id,skill_name,skill_desc) VALUES(?,?,?)',[Number(id),name,desc && desc.replace(/(\r)*(\n)*(#[a-zA-Z0-9]*)*(#)?/g,'')]);
+                //         if(result.fieldCount == 0){
+                //             console.log( id + ' insert success');
+                //         }else{
+                //             console.log(id + ' insert success');
+                //         };
+                //     };
+                // };
+            };
+        });
+    }
 
-        };
-    });
-};
+}
+// Import.importCC('Cash.img.xml');
+// Import.importCC('Consume.img.xml');
+// Import.importEE('Eqp.img.xml');
+// Import.importEE('Etc.img.xml');
+// Import.importCC('Ins.img.xml');
+// Import.importMap('Map.img.xml');
+// Import.importMob('Mob.img.xml');
+// Import.importNpc('Npc.img.xml');
+// Import.importCC('Pet.img.xml');
+// Import.importSkill('Skill.img.xml');
+Import.importMonsterBook('MonsterBook.img.xml');
+

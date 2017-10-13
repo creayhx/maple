@@ -1,17 +1,19 @@
 ﻿var express = require('express'); //express模版
-var serveStatic = require('serve-static');//相对根路径
 var bodyParser = require('body-parser'); //处理URL数据
 var cookieParser = require('cookie-parser')//处理cookie
 var session = require('express-session'); //会话 session
+var compress = require('compression');//文件压缩
 var port = process.env.PORT || 80;//端口
 var app = express();//调用模版
+
+app.use(compress());// 调用文件压缩 压缩文件
 
 app.set('views','./views');  //设置模版默认路径
 app.set('view engine','ejs');//设置渲染模版
 app.use(bodyParser.urlencoded({ extended: true }));//获取提交的数据
-app.use(serveStatic('resources'));//设置静态目录
-app.use(cookieParser()); // 获取cookie
-app.use(session({ //设置会话信息
+app.use(express.static('resources'));// 设置静态目录
+app.use(cookieParser()); //获取cookie
+app.use(session({
 	secret : 'my', //随意字符串
 	resave: false, //是否重保存
 	saveUninitialized: true, //保存初始化
