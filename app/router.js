@@ -2,10 +2,9 @@ var Control = require('./controllers')
 
 module.exports = function(app){
 	app.use(function(req,res,next){
-		var _user = req.session.user;
-		app.locals.user = _user;
+		app.locals.user = req.session.user;
 		next();
-	})
+	});
 
 	app.get('/',Control.index); //打开首页
 	app.get('/login',Control.loginVer,Control.login); //登录

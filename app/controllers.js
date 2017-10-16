@@ -74,7 +74,6 @@ exports.index = function(req, res) {
 }
 exports.login = function(req, res) {
 	//登录页面
-	res.header('Content-Disposition','attachment;filename=FileName.txt');
 	res.render('login', {
 		title: 'login'
 	})
@@ -156,14 +155,13 @@ exports.vdetail = function(req, res) {
 		name: name
 	})
 };
-
 exports.udetail = function(req, res) {
 	conn.query('SELECT * FROM accounts Where name = ?', [req.session.user.name], function(err, result, fileds) {
 		res.render('udetail', {
 			title: 'MapleStory User Detail',
 			gameUser: result[0]
-		})
-	})
+		});
+	});
 };
 exports.pdetail = function(req, res) {
 	conn.query('SELECT * FROM characters where characters.accountid in (SELECT accounts.id FROM accounts where accounts.name=?)', [req.session.user.name], function(err, result, fileds) {
@@ -192,8 +190,8 @@ exports.mdetail = function(req,res){
 		res.render('mdetail',{
 			title:"Monster"
 		})
-	})
-}
+	});
+};
 exports.Item = function(req, res) {
 	var name = req.body.name;
 	conn.query('SELECT * FROM inventoryitems WHERE characterid in (SELECT id FROM characters WHERE name = ? ) ORDER BY inventorytype,position', [name], function(err, ret, fileds) {
