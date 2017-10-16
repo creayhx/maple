@@ -14,10 +14,10 @@
 			</div>
 			<div class="userlogin">
 				<form action="/signup" method="post">
-					<input type="text" name="userName" onfocus="if(this.placeholder){this.placeholder=''}" onblur="if(this.placeholder==''){this.placeholder='请输入用户名'}" placeholder="请输入用户名" class="name" />
-					<input type="password" name="userPassword" onfocus="if(this.placeholder){this.placeholder=''}" onblur="if(this.placeholder==''){this.placeholder='请输入密码'}" placeholder="请输入密码" class="pwd" />
-					<input type="password" name="rePassword" onfocus="if(this.placeholder){this.placeholder=''}" onblur="if(this.placeholder==''){this.placeholder='请再次输入密码'}" placeholder="请再次输入密码" class="rpwd" />
-					<input type="text" name="email" onfocus="if(this.placeholder){this.placeholder=''}" onblur="if(this.placeholder==''){this.placeholder='请输入邮箱'}" placeholder="请输入邮箱" />
+					<input type="text" name="userName" placeholder="请输入用户名" class="name" />
+					<input type="password" name="userPassword"  placeholder="请输入密码" class="pwd" />
+					<input type="password" name="rePassword"  placeholder="请再次输入密码" class="rpwd" />
+					<input type="text" name="email" placeholder="请输入邮箱" />
 					<input type="button" class="reg" value="注册" />
 				</form>
 			</div>
@@ -39,8 +39,8 @@
 						return true
 					}else{
 						false
-					}
-				}
+					};
+				};
 				Dom.reg.click(function(){
 					var user = {
 						userName : Dom.userName.val(),
@@ -55,8 +55,7 @@
 							dataType:'json',
 							success:function(resp){
 								if(resp.result){
-									alert('注册成功')
-									// window.location.href = '/login';
+									window.location.href = '/login';
 								}else{
 									alert(resp.msg)
 								}
