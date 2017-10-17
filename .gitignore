@@ -2,4 +2,8 @@ node_modules
 MySQL
 sql
 string
+<<<<<<< HEAD
+data
+=======
 /wz
+>>>>>>> origin/master
