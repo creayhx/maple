@@ -99,7 +99,7 @@ var Import = {
             };
         });
     },
-    importMap : function(file){ // 导入装备 其他
+    importMap : function(file){ // 导入地图id和简介
         co(function*(){
             var data = yield readFile('./string/' + file,'utf-8');
             var $ = cheerio.load(data);
@@ -124,7 +124,7 @@ var Import = {
             };
         });
     },
-    importMob : function(file){ // 导入装备 其他
+    importMob : function(file){ // 导入怪物名称 id
         co(function*(){
             var data = yield readFile('./string/' + file,'utf-8');
             var $ = cheerio.load(data);
@@ -147,7 +147,7 @@ var Import = {
             };
         });
     },
-    importNpc : function(file){ // 导入装备 其他
+    importNpc : function(file){ // 导入NPC 信息
         co(function*(){
             var data = yield readFile('./string/' + file,'utf-8');
             var $ = cheerio.load(data);
@@ -170,7 +170,7 @@ var Import = {
             };
         });
     },
-    importSkill : function(file){ // 导入装备 其他
+    importSkill : function(file){ // 导入技能描述
         co(function*(){
             var data = yield readFile('./string/' + file,'utf-8');
             var $ = cheerio.load(data);
@@ -194,7 +194,7 @@ var Import = {
             };
         });
     },
-    importMonsterBook : function(file){ // 导入装备 其他
+    importMonsterBook : function(file){ // 导入怪物数据
         co(function*(){
             var data = yield readFile('./string/' + file,'utf-8');
             var $ = cheerio.load(data);
@@ -224,13 +224,13 @@ var Import = {
 }
 // Import.importCC('Cash.img.xml');
 // Import.importCC('Consume.img.xml');
+// Import.importCC('Ins.img.xml');
+// Import.importCC('Pet.img.xml');
 // Import.importEE('Eqp.img.xml');
 // Import.importEE('Etc.img.xml');
-// Import.importCC('Ins.img.xml');
 // Import.importMap('Map.img.xml');
 // Import.importMob('Mob.img.xml');
 // Import.importNpc('Npc.img.xml');
-// Import.importCC('Pet.img.xml');
 // Import.importSkill('Skill.img.xml');
-Import.importMonsterBook('MonsterBook.img.xml');
+// Import.importMonsterBook('MonsterBook.img.xml');
 
