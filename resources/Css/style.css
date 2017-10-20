@@ -644,6 +644,7 @@ h3 { font-size: 1.4rem; }
 	width:20%;
 	line-height:4rem;
 	text-align:center;
+	color:#999;
 }
 .item-content-nav ul li.on{
 	font-weight:bold;
