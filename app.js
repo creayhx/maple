@@ -28,6 +28,7 @@ function getAddr(){
     var addr = '';
     for(var netName in net){
         for(var key in net[netName]){
+	    console.log(net[netName][key].address);
             if( net[netName][key].family.indexOf('IPv4') != -1 && net[netName][key].address != '127.0.0.1'){
                 addr += netName +' '+ net[netName][key].address +'  ';
             }
@@ -35,9 +36,10 @@ function getAddr(){
     }
     return addr;
 };
-console.log('Server On : ' + getAddr() + ' 端口 ' + port);
+//console.log('Server On : ' + getAddr() + ' 端口 ' + port);
 
 require('./app/router')(app); //路由事件
+console.log('服务启动成功');
 app.disable('x-powered-by'); // 禁止显示模版名称
 // if('development' === app.get('env')){ //debug 调试信息
 // 	app.set('showStackError',true);
