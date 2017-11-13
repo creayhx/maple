@@ -1,4 +1,4 @@
-var crypto = require('crypto');
+﻿var crypto = require('crypto');
 var mysql = require('mysql');
 var fs = require('fs');
 var sqlConfig = require('./sqlConfig').sqlConfig;
