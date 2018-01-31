@@ -3,7 +3,7 @@ var bodyParser = require('body-parser'); //处理URL数据
 var cookieParser = require('cookie-parser')//处理cookie
 var session = require('express-session'); //会话 session
 var compress = require('compression');//文件压缩
-var port = process.env.PORT || 80;//端口
+var port = process.env.PORT || 81;//端口
 var app = express();//调用模版
 
 app.use(compress());// 调用文件压缩 压缩文件
